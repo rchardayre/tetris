@@ -57,11 +57,9 @@ class Grid:
 
     def key_pressed(self, symb, mod):
         if symb == key.LEFT:
-            print("moving left")
             self.curr_piece.move_piece(-1, 0)
             self.updateGrid()
         elif symb == key.RIGHT:
-            print("moving right")
             self.curr_piece.move_piece(1, 0)
             self.updateGrid()
         elif symb == key.UP:

@@ -2,7 +2,6 @@
 import pyglet
 import config
 import grid
-import actions
 
 tetris_grid = []
 window = pyglet.window.Window(height=config.window_height, width=config.window_width)
