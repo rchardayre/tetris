@@ -4,6 +4,7 @@ import config
 import grid
 import json
 import sys
+import time
 
 MOVE_LEFT = "L"
 MOVE_RIGHT = "R"
@@ -31,7 +32,7 @@ def draw():
     tetris_grid.draw()
 
 
-def update(time):
+def update(delta_t):
     if config.is_replay:
         global replay_idx
         for move in record['moves'][replay_idx]:
@@ -62,16 +63,13 @@ def update(time):
 
 if __name__ == "__main__":
     print("Launching Tetris...")
-
     if len(sys.argv) > 1:
         filename = sys.argv[1]
         with open(filename) as f:
             record = json.load(f)
             config.is_record = False
             config.is_replay = True
-
     tetris_grid = grid.Grid(config.nb_block_horizontal, config.nb_block_vertical, record)
-
     if config.is_simulation:
         while(True):
             update(0)

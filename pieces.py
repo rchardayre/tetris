@@ -8,6 +8,7 @@ T_PIECE = 5
 S_PIECE = 6
 Z_PIECE = 7
 
+PIECE_LIST = [SQUARE_PIECE, BAR_PIECE, L_PIECE, J_PIECE, T_PIECE, S_PIECE, Z_PIECE]
 ROTATE_0 = 0
 ROTATE_90 = 1
 ROTATE_180 = 2
@@ -19,7 +20,7 @@ FORBIDDEN_MOVE = 1
 ROTATE_CLOCKWISE = 0
 ROTATE_COUNTERCLOCKWISE = 1
 
-PIECE_LIST = [
+PIECE_SHIFT_LIST = [
             [  [],
                [[0,0],[0,1],[1,0],[1,1]], #SQUARE      ##
 #                                                      X#
@@ -132,7 +133,7 @@ class Piece():
         self.form = form_idx
         self.rotateState = 0 
         self.position = [start_pos[0], start_pos[1]]
-        for shift in PIECE_LIST[self.rotateState][self.form]:
+        for shift in PIECE_SHIFT_LIST[self.rotateState][self.form]:
             blockpos = [start_pos[0]+shift[0], start_pos[1]+shift[1]]
             self.grid[blockpos[0]][blockpos[1]] = self.form
     
@@ -160,8 +161,8 @@ class Piece():
         return ALLOWED_MOVE
 
     def is_move_allowed(self, rotateIdx, shift_x, shift_y):
-        listPosition = [[shift[0] + self.position[0], shift[1] + self.position[1]] for shift in PIECE_LIST[self.rotateState][self.form]]
-        for shift in PIECE_LIST[rotateIdx][self.form]:
+        listPosition = [[shift[0] + self.position[0], shift[1] + self.position[1]] for shift in PIECE_SHIFT_LIST[self.rotateState][self.form]]
+        for shift in PIECE_SHIFT_LIST[rotateIdx][self.form]:
             new_y = self.position[0] + shift[0] + shift_y
             new_x = self.position[1] + shift[1] + shift_x
             if  (
@@ -174,13 +175,13 @@ class Piece():
 
     def update_position(self, rotateIdx, shift_x, shift_y):
         ##Delete prev position
-        for shift in PIECE_LIST[self.rotateState][self.form]:
+        for shift in PIECE_SHIFT_LIST[self.rotateState][self.form]:
             posy = shift[0] + self.position[0]
             posx = shift[1] + self.position[1]
             self.grid[posy][posx] = 0
 
         ##Update new position
-        for shift in PIECE_LIST[rotateIdx][self.form]:
+        for shift in PIECE_SHIFT_LIST[rotateIdx][self.form]:
             posy = shift[0] + self.position[0] + shift_y
             posx = shift[1] + self.position[1] + shift_x
             self.grid[posy][posx] = self.form

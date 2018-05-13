@@ -2,12 +2,14 @@ import pyglet
 from pyglet.window import key
 import config
 import random
+import sys
 import time 
 import pieces
 from numpy import *
 
 COLOR_ARRAY = [[75, 75, 75], [255, 0, 0], [0, 0, 255], [255, 255, 0], [255, 0, 255], [0, 255, 255], [0, 255, 0], [255, 255, 255]]
 GAME_OVER = 1
+
 
 class Grid:
 
@@ -16,7 +18,8 @@ class Grid:
         self.height = height
         self.start_pos = [height-2, round(width/2) - 1]
         self.grid = [ [ 0 for i in range(width) ] for j in range(height) ]
-        self.BLOCK_LIST = [ FilledSquare(config.block_width, config.block_height, COLOR_ARRAY[0])
+        if not config.is_simulation:
+            self.BLOCK_LIST = [ FilledSquare(config.block_width, config.block_height, COLOR_ARRAY[0])
         , FilledSquare(config.block_width, config.block_height, COLOR_ARRAY[1])
         , FilledSquare(config.block_width, config.block_height, COLOR_ARRAY[2])
         , FilledSquare(config.block_width, config.block_height, COLOR_ARRAY[3])
@@ -25,24 +28,29 @@ class Grid:
         , FilledSquare(config.block_width, config.block_height, COLOR_ARRAY[6])
         , FilledSquare(config.block_width, config.block_height, COLOR_ARRAY[7]) ] 
        
+            self.objectGrid = [ [ self.BLOCK_LIST[0] for i in range(width) ] for j in range(height) ]
         self.score = 0
         self.record = record
         self.list_form_idx = 0
-        self.objectGrid = [ [ self.BLOCK_LIST[0] for i in range(width) ] for j in range(height) ]
         
-        if config.is_record:
-            form_idx = random.randint(1,7)
-            self.record['forms'].append(form_idx)
-        else:
+        self.curr_move_list = []
+        self.curr_piece = pieces.Piece(self.grid, self.start_pos, self.getNextForm())
+        self.updateGrid()
+
+    def getNextForm(self):
+        if config.is_replay:
             if len(self.record['forms']) > self.list_form_idx:
                 form_idx = self.record['forms'][self.list_form_idx]
                 self.list_form_idx = self.list_form_idx + 1
             else:
-                form_idx = random.randint(1,7)
+                print("NO MORE FORMS")
+                sys.exit(1)
+        else:
+            form_idx = int(random.choice(pieces.PIECE_LIST))
+            if config.is_record:
+                self.record['forms'].append(form_idx)
 
-        self.curr_move_list = []
-        self.curr_piece = pieces.Piece(self.grid, self.start_pos, form_idx)
-        self.updateGrid()
+        return form_idx
 
     def updateGrid(self):
         if not config.is_simulation:
@@ -63,17 +71,9 @@ class Grid:
                     score = (score + 5)*2 
             self.score = self.score + score
             if self.grid[self.start_pos[0]][self.start_pos[1]] != 0:
-                return GAME_OVER;
-            if config.is_record:
-                form_idx = random.randint(1,7)
-                self.record['forms'].append(form_idx)
-            else:
-                if len(self.record['forms']) > self.list_form_idx:
-                    form_idx = self.record['forms'][self.list_form_idx]
-                    self.list_form_idx = self.list_form_idx + 1
-                else:
-                    form_idx = random.randint(1,7)
-            self.curr_piece = pieces.Piece(self.grid, self.start_pos, form_idx)
+                return GAME_OVER
+
+            self.curr_piece = pieces.Piece(self.grid, self.start_pos, self.getNextForm())
 
         self.updateGrid()
 
