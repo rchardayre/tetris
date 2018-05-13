@@ -1,4 +1,3 @@
-import random
 import config
 
 SQUARE_PIECE = 1
@@ -128,9 +127,9 @@ class Piece():
     def __init__(self, grid, value):
         self.grid = grid
 
-    def __init__(self, grid, start_pos):
+    def __init__(self, grid, start_pos, form_idx):
         self.grid = grid
-        self.form = random.randint(1, 7)
+        self.form = form_idx
         self.rotateState = 0 
         self.position = [start_pos[0], start_pos[1]]
         for shift in PIECE_LIST[self.rotateState][self.form]:

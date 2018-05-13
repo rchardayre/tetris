@@ -11,7 +11,7 @@ GAME_OVER = 1
 
 class Grid:
 
-    def __init__(self, width, height):
+    def __init__(self, width, height, record):
         self.width = width
         self.height = height
         self.start_pos = [height-2, round(width/2) - 1]
@@ -26,22 +26,34 @@ class Grid:
         , FilledSquare(config.block_width, config.block_height, COLOR_ARRAY[7]) ] 
        
         self.score = 0
-
+        self.record = record
+        self.list_form_idx = 0
         self.objectGrid = [ [ self.BLOCK_LIST[0] for i in range(width) ] for j in range(height) ]
-        self.curr_piece = pieces.Piece(self.grid, self.start_pos)
+        
+        if config.is_record:
+            form_idx = random.randint(1,7)
+            self.record['forms'].append(form_idx)
+        else:
+            if len(self.record['forms']) > self.list_form_idx:
+                form_idx = self.record['forms'][self.list_form_idx]
+                self.list_form_idx = self.list_form_idx + 1
+            else:
+                form_idx = random.randint(1,7)
+
+        self.curr_move_list = []
+        self.curr_piece = pieces.Piece(self.grid, self.start_pos, form_idx)
         self.updateGrid()
 
     def updateGrid(self):
-        #self.grid = grid
-        #posx = random.randint(0,9)
-        #posy = random.randint(0, 21)
-        #value = random.randint(0,7)
-        #self.grid[posx][posy] = [value, False]
-        for row in range(0, self.width):
-            for col in range(0, self.height):
-                self.objectGrid[col][row] = self.BLOCK_LIST[self.grid[col][row]]
+        if not config.is_simulation:
+            for row in range(0, self.width):
+                for col in range(0, self.height):
+                    self.objectGrid[col][row] = self.BLOCK_LIST[self.grid[col][row]]
         
     def clock_update(self):
+        if config.is_record:
+            self.record['moves'].append(self.curr_move_list)
+            self.curr_move_list = []
         if (self.curr_piece.move_piece(0, -1) == pieces.FORBIDDEN_MOVE):
             score = 0
             for row in self.grid[:]:
@@ -52,30 +64,70 @@ class Grid:
             self.score = self.score + score
             if self.grid[self.start_pos[0]][self.start_pos[1]] != 0:
                 return GAME_OVER;
-            self.curr_piece = pieces.Piece(self.grid, self.start_pos)
+            if config.is_record:
+                form_idx = random.randint(1,7)
+                self.record['forms'].append(form_idx)
+            else:
+                if len(self.record['forms']) > self.list_form_idx:
+                    form_idx = self.record['forms'][self.list_form_idx]
+                    self.list_form_idx = self.list_form_idx + 1
+                else:
+                    form_idx = random.randint(1,7)
+            self.curr_piece = pieces.Piece(self.grid, self.start_pos, form_idx)
+
+        self.updateGrid()
+
+    def move_left(self):
+        if config.is_record:
+            self.curr_move_list.append("L")
+        self.curr_piece.move_piece(-1, 0)
+        self.updateGrid()
+
+    def move_right(self):
+        if config.is_record:
+            self.curr_move_list.append("R")
+        self.curr_piece.move_piece(1, 0)
+        self.updateGrid()
+
+    def move_down(self):
+        if config.is_record:
+            self.curr_move_list.append("D")
+        self.curr_piece.move_piece(0, -1)
+        self.updateGrid()
+
+    def hard_drop(self):
+        if config.is_record:
+            self.curr_move_list.append("H")
+        has_reached_bottom = False
+        while(not has_reached_bottom):
+            has_reached_bottom = (pieces.FORBIDDEN_MOVE == self.curr_piece.move_piece(0, -1))
+        self.updateGrid()
+   
+    def rotate_clockwise(self):
+        if config.is_record:
+            self.curr_move_list.append("T")
+        self.curr_piece.rotate(pieces.ROTATE_CLOCKWISE)
+        self.updateGrid()
+
+    def rotate_counterclockwise(self):
+        if config.is_record:
+            self.curr_move_list.append("Y")
+        self.curr_piece.rotate(pieces.ROTATE_COUNTERCLOCKWISE)
         self.updateGrid()
 
     def key_pressed(self, symb, mod):
         if symb == key.LEFT:
-            self.curr_piece.move_piece(-1, 0)
-            self.updateGrid()
+            self.move_left()
         elif symb == key.RIGHT:
-            self.curr_piece.move_piece(1, 0)
-            self.updateGrid()
+            self.move_right()
         elif symb == key.UP:
-            has_reached_bottom = False
-            while(not has_reached_bottom):
-                has_reached_bottom = (pieces.FORBIDDEN_MOVE == self.curr_piece.move_piece(0, -1))
-            self.updateGrid()
+            self.hard_drop()
         elif symb == key.DOWN:
-            self.curr_piece.move_piece(0, -1)
-            self.updateGrid()
+            self.move_down()
         elif symb == key.E:
-            self.curr_piece.rotate(pieces.ROTATE_CLOCKWISE)
-            self.updateGrid()
+            self.rotate_clockwise()
         elif symb == key.R:
-            self.curr_piece.rotate(pieces.ROTATE_COUNTERCLOCKWISE)
-            self.updateGrid()
+            self.rotate_counterclockwise()
         elif symb == key.P:
             self.pretty_print()
 

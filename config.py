@@ -4,3 +4,7 @@ block_width = 25
 block_height = 25
 nb_block_horizontal = 10
 nb_block_vertical = 22
+update_frequency = 1.0/5
+is_replay = False
+is_simulation = False
+is_record = True
