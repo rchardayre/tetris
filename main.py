@@ -5,27 +5,14 @@ import grid
 import json
 import sys
 import time
-
-MOVE_LEFT = "L"
-MOVE_RIGHT = "R"
-MOVE_DOWN = "D"
-ROTATE_CLOCKWISE = "T"
-ROTATE_COUNTERCLOCKWISE = "Y"
-HARD_DROP = "H"
-
+import argparse
 
 tetris_grid = []
 record = {'moves' : [], 'forms' : []}
 replay_idx = 0
 
-if not config.is_simulation:
-    window = pyglet.window.Window(height=config.window_height, width=config.window_width)
-
 def draw():
-    """
-    Clears screen and then renders our list of ball objects
-    :return:
-    """
+    global window
     window.clear()
     pyglet.gl.glClearColor(0, 0, 0, 0)
     pyglet.gl.glClear(pyglet.gl.GL_COLOR_BUFFER_BIT)
@@ -37,17 +24,17 @@ def update(delta_t):
         global replay_idx
         for move in record['moves'][replay_idx]:
             #time.sleep(config.update_frequency / 10)
-            if move == MOVE_LEFT:
+            if move == grid.MOVE_LEFT:
                 tetris_grid.move_left()
-            elif move == MOVE_RIGHT:
+            elif move == grid.MOVE_RIGHT:
                 tetris_grid.move_right()
-            elif move == ROTATE_CLOCKWISE:
+            elif move == grid.ROTATE_CLOCKWISE:
                 tetris_grid.rotate_clockwise()
-            elif move == MOVE_DOWN:
+            elif move == grid.MOVE_DOWN:
                 tetris_grid.move_down()
-            elif move == ROTATE_COUNTERCLOCKWISE:
+            elif move == grid.ROTATE_COUNTERCLOCKWISE:
                 tetris_grid.rotate_counteclockwise()
-            elif move == HARD_DROP:
+            elif move == grid.HARD_DROP:
                 tetris_grid.hard_drop()
 
         replay_idx = replay_idx + 1
@@ -63,17 +50,39 @@ def update(delta_t):
 
 if __name__ == "__main__":
     print("Launching Tetris...")
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--simulation', dest='simulation', action='store_true') 
+    parser.add_argument('--playback', dest='playback_file', type=str, default ='')
+    parser.add_argument('--record', dest='record', action='store_true')
+    parser.add_argument('--freq', dest='frequency', type=float, default=0.2)
+    
+    options = parser.parse_args()
+    
     if len(sys.argv) > 1:
-        filename = sys.argv[1]
-        with open(filename) as f:
-            record = json.load(f)
-            config.is_record = False
-            config.is_replay = True
+        filename = options.playback_file
+        if filename != '':
+            if options.record:
+                print("Cannot record a playback")
+                options.record = False
+            try:
+                with open(filename) as f:
+                    record = json.load(f)
+                    config.is_replay = True
+            except Exception:
+                print("Invalid playback file")
+                sys.exit(1)
+
+    config.is_record = options.record
+    config.is_simulation = options.simulation
+    config.update_frequency = options.frequency
+
     tetris_grid = grid.Grid(config.nb_block_horizontal, config.nb_block_vertical, record)
     if config.is_simulation:
         while(True):
             update(0)
     else:
+        global window
+        window = pyglet.window.Window(height=config.window_height, width=config.window_width)
         @window.event
         def on_draw():
             draw()

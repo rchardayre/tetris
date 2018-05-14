@@ -10,6 +10,12 @@ from numpy import *
 COLOR_ARRAY = [[75, 75, 75], [255, 0, 0], [0, 0, 255], [255, 255, 0], [255, 0, 255], [0, 255, 255], [0, 255, 0], [255, 255, 255]]
 GAME_OVER = 1
 
+MOVE_LEFT = "L"
+MOVE_RIGHT = "R"
+MOVE_DOWN = "D"
+ROTATE_CLOCKWISE = "T"
+ROTATE_COUNTERCLOCKWISE = "Y"
+HARD_DROP = "H"
 
 class Grid:
 
@@ -79,25 +85,25 @@ class Grid:
 
     def move_left(self):
         if config.is_record:
-            self.curr_move_list.append("L")
+            self.curr_move_list.append(MOVE_LEFT)
         self.curr_piece.move_piece(-1, 0)
         self.updateGrid()
 
     def move_right(self):
         if config.is_record:
-            self.curr_move_list.append("R")
+            self.curr_move_list.append(MOVE_RIGHT)
         self.curr_piece.move_piece(1, 0)
         self.updateGrid()
 
     def move_down(self):
         if config.is_record:
-            self.curr_move_list.append("D")
+            self.curr_move_list.append(MOVE_DOWN)
         self.curr_piece.move_piece(0, -1)
         self.updateGrid()
 
     def hard_drop(self):
         if config.is_record:
-            self.curr_move_list.append("H")
+            self.curr_move_list.append(HARD_DROP)
         has_reached_bottom = False
         while(not has_reached_bottom):
             has_reached_bottom = (pieces.FORBIDDEN_MOVE == self.curr_piece.move_piece(0, -1))
@@ -105,13 +111,13 @@ class Grid:
    
     def rotate_clockwise(self):
         if config.is_record:
-            self.curr_move_list.append("T")
+            self.curr_move_list.append(ROTATE_CLOCKWISE)
         self.curr_piece.rotate(pieces.ROTATE_CLOCKWISE)
         self.updateGrid()
 
     def rotate_counterclockwise(self):
         if config.is_record:
-            self.curr_move_list.append("Y")
+            self.curr_move_list.append(ROTATE_COUNTERCLOCKWISE)
         self.curr_piece.rotate(pieces.ROTATE_COUNTERCLOCKWISE)
         self.updateGrid()
 
